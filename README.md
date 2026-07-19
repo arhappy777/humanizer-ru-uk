@@ -152,7 +152,7 @@ Four modes: `rewrite` (default), `audit` (flag only), `draft` (post from notes),
 
 ## Версии
 
-Текущая версия — 0.3.0. История изменений — в [CHANGELOG.md](CHANGELOG.md).
+Текущая версия — 0.3.1. История изменений — в [CHANGELOG.md](CHANGELOG.md).
 
 ## Лицензия
 

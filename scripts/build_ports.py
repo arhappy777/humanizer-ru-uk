@@ -36,6 +36,17 @@ REFERENCE_ORDER = (
 )
 
 
+def configure_utf8() -> None:
+    # Windows-консоль по умолчанию cp1251/cp1252 и падает на кириллице в print().
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (AttributeError, OSError):
+                pass
+
+
 def read(path: Path) -> str:
     # Нормализация перевода строк: git на Windows может выдать CRLF при checkout.
     return path.read_text(encoding="utf-8").replace("\r\n", "\n")
@@ -75,6 +86,7 @@ def build_outputs() -> dict[str, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    configure_utf8()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="verify dist/ is up to date")
     args = parser.parse_args(argv)

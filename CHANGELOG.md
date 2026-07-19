@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 — 2026-07-19
+
+- `build_ports.py` переводит stdout/stderr в UTF-8, как это уже делает аудитор: на Windows-консоли с cp1252 вывод кириллицы ронял скрипт (и CI).
+
 ## 0.3.0 — 2026-07-19
 
 - Скилл теперь ставится куда угодно: в `dist/` лежат собранные версии для платформ без доступа к файлам — `humanizer-ru-uk-full.md` (SKILL.md + все каталоги одним файлом: ChatGPT Knowledge, claude.ai Project, вставка в чат) и `chatgpt-instructions.md` (компактная инструкция под лимит 8000 знаков поля Instructions Custom GPT).
