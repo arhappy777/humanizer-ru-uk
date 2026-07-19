@@ -1,0 +1,4 @@
+interface:
+  display_name: "Humanizer RU/UK"
+  short_description: "Natural Russian and Ukrainian social posts"
+  default_prompt: "Use $humanizer-ru-uk to rewrite this draft as a natural social post while preserving every fact."
