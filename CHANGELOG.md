@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-07-19
+
+- Скилл теперь ставится куда угодно: в `dist/` лежат собранные версии для платформ без доступа к файлам — `humanizer-ru-uk-full.md` (SKILL.md + все каталоги одним файлом: ChatGPT Knowledge, claude.ai Project, вставка в чат) и `chatgpt-instructions.md` (компактная инструкция под лимит 8000 знаков поля Instructions Custom GPT).
+- Сборщик `scripts/build_ports.py`; актуальность `dist/` проверяют тесты и отдельный шаг CI (`--check`).
+- Каталог пополнен `references/examples.md` — эталонные разборы «до → после» для режимов `draft` и `rewrite` (русский и украинский); подключён в SKILL.md.
+- Правила площадок расширены: Threads, X (Twitter), VK и длинные посты.
+- README: раздел установки для ChatGPT/claude.ai и английский quickstart.
+
 ## 0.2.1 — 2026-07-19
 
 - Frontmatter приведён к спецификации Agent Skills: `version` перенесена в `metadata` (валидатор ругался на верхнеуровневый ключ). Формат frontmatter теперь проверяют тесты в CI: допустимые ключи, name, длина description, версия внутри metadata.

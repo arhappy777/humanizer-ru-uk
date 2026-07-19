@@ -45,6 +45,10 @@ git clone https://github.com/arhappy777/humanizer-ru-uk "$env:USERPROFILE\.codex
 
 На macOS і Linux використовуйте `~/.claude/skills/humanizer-ru-uk`, `~/.openclaw/skills/humanizer-ru-uk` або `~/.codex/skills/humanizer-ru-uk`.
 
+### ChatGPT, claude.ai та будь-який інший LLM
+
+Платформи без доступу до файлів скіла використовують зібрані версії з папки [dist](dist/): для ChatGPT вставте [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) у поле Instructions і прикладіть [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) як Knowledge; для claude.ai додайте повний файл у Project; в іншому чаті — надішліть файл і попросіть слідувати інструкції.
+
 ## Використання
 
 ```text
@@ -112,7 +116,7 @@ Get-Content post.txt -Raw | python scripts/audit_text.py - --lang uk
 
 ## Версії
 
-Поточна версія — 0.2.1. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
+Поточна версія — 0.3.0. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
 
 ## Ліцензія
 

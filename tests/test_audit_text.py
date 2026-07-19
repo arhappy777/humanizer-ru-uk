@@ -76,6 +76,38 @@ class FrontmatterTests(unittest.TestCase):
         self.assertRegex(block, r"(?m)^\s+version:\s*\"?\d+\.\d+\.\d+\"?\s*$")
 
 
+class PortTests(unittest.TestCase):
+    """dist/ должен собираться из исходников и не отставать от них."""
+
+    def test_dist_is_in_sync_with_sources(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "build_ports.py"), "--check"],
+            check=False, capture_output=True,
+        )
+        self.assertEqual(
+            completed.returncode, 0,
+            completed.stdout.decode("utf-8", errors="replace")
+            + completed.stderr.decode("utf-8", errors="replace"),
+        )
+
+    def test_chatgpt_instructions_fit_custom_gpt_limit(self) -> None:
+        content = (ROOT / "ports" / "chatgpt-instructions.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(content), 8000, "поле Instructions Custom GPT ограничено 8000 знаками")
+
+    def test_full_port_contains_all_sections_and_no_repo_internals(self) -> None:
+        content = (ROOT / "dist" / "humanizer-ru-uk-full.md").read_text(encoding="utf-8")
+        for marker in (
+            "Общие паттерны",
+            "Русский профиль",
+            "Український профіль",
+            "Примеры «до → после»",
+            "Источники и происхождение",
+        ):
+            self.assertIn(marker, content)
+        self.assertNotIn("port:skip", content)
+        self.assertNotIn("scripts/audit_text.py", content)
+
+
 class SyncTests(unittest.TestCase):
     """Every code the script can emit must mean the same thing in references/."""
 

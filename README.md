@@ -45,6 +45,16 @@ git clone https://github.com/arhappy777/humanizer-ru-uk "$env:USERPROFILE\.codex
 
 На macOS и Linux замените путь назначения на `~/.claude/skills/humanizer-ru-uk`, `~/.openclaw/skills/humanizer-ru-uk` или `~/.codex/skills/humanizer-ru-uk`.
 
+### ChatGPT, claude.ai и любой другой LLM
+
+Платформы без доступа к файлам скилла используют собранные версии из папки [dist](dist/):
+
+- **ChatGPT (Custom GPT):** содержимое [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) вставить в поле Instructions, а [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) приложить как Knowledge.
+- **claude.ai:** добавить [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) в Project (или загрузить как скилл).
+- **Любой другой чат:** отправить файл или вставить его в начало диалога и попросить следовать инструкции.
+
+Файлы в `dist/` собираются командой `python scripts/build_ports.py`; их актуальность проверяет CI.
+
 ## Использование
 
 Примеры запросов:
@@ -130,9 +140,19 @@ python "C:\path\to\skill-creator\scripts\quick_validate.py" .
 
 Украинский профиль сверяется с действующим [стандартом «Український правопис» 2026 года](https://mova.gov.ua/storage/app/sites/19/2026/rishennja-komisiji/01-03/sdm-ukrayinskii-pravopis-vidannia.pdf).
 
+## English quickstart
+
+humanizer-ru-uk is an Agent Skill that edits Russian and Ukrainian social posts: it removes template AI patterns (bureaucratese, calques, empty hooks, uniform rhythm, chatbot artifacts) while preserving the author's facts and voice. It can also draft a post from raw notes. It is an editor, not an AI detector, and it does not promise detector evasion.
+
+- **Claude Code / OpenClaw / Codex:** clone this repo into the agent's skills directory (see paths above), then ask: "убери ИИ-шный стиль из этого поста" or "зроби текст живим".
+- **ChatGPT:** paste [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) into a Custom GPT's Instructions and attach [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) as Knowledge.
+- **claude.ai or any other LLM:** add [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) to a Project or paste it at the start of a chat.
+
+Four modes: `rewrite` (default), `audit` (flag only), `draft` (post from notes), `edit` (fix a file in place).
+
 ## Версии
 
-Текущая версия — 0.2.1. История изменений — в [CHANGELOG.md](CHANGELOG.md).
+Текущая версия — 0.3.0. История изменений — в [CHANGELOG.md](CHANGELOG.md).
 
 ## Лицензия
 
