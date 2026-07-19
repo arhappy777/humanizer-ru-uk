@@ -464,8 +464,7 @@ STRUCTURAL_RULES: dict[str, tuple[str, str]] = {
 TRIAD_RE = re.compile(
     r"\b([а-яёіїєґ]{4,})\s*,\s*([а-яёіїєґ]{4,})\s*(?:,\s*)?(?:и|і|та|й)\s+([а-яёіїєґ]{4,})\b"
 )
-SPACED_DASH_RE = re.compile(r"(?<=\s)[—–](?=\s)")
-DIALOGUE_DASH_RE = re.compile(r"^[ \t]*[—–][ \t]", re.MULTILINE)
+SPACED_DASH_RE = re.compile(r"(?<=\s)[—–](?=\s)|\A[—–](?=\s)")
 GLUED_DASH_RE = re.compile(r"(?<=[а-яёіїєґa-z])—(?=[а-яёіїєґa-z])", re.IGNORECASE)
 HASHTAG_RUN_RE = re.compile(r"(?:#[^\s#,]+[ \t,]*)+")
 
@@ -727,13 +726,16 @@ def structural_findings(text: str, detected: str, platform: str = "neutral") -> 
             [snippet(text, run_match.start(), run_match.end())], max_run,
         ))
 
-    spaced_dashes = list(SPACED_DASH_RE.finditer(text))
-    dialogue_dashes = len(DIALOGUE_DASH_RE.findall(text))
+    # Реплика диалога — это тире в начале строки; такие совпадения не считаются паузами.
+    pause_dashes = [
+        match for match in SPACED_DASH_RE.finditer(text)
+        if text[text.rfind("\n", 0, match.start()) + 1:match.start()].strip()
+    ]
     glued_dashes = len(GLUED_DASH_RE.findall(text))
-    dash_count = max(0, len(spaced_dashes) - dialogue_dashes) + glued_dashes
+    dash_count = len(pause_dashes) + glued_dashes
     if dash_count >= 3 and word_count and dash_count * 100.0 / word_count >= 2.0:
         evidence = [f"тире-пауз: {dash_count} на {word_count} слов"]
-        evidence.extend(snippet(text, match.start(), match.end()) for match in spaced_dashes[:2])
+        evidence.extend(snippet(text, match.start(), match.end()) for match in pause_dashes[:2])
         findings.append(localized_finding(
             detected, "S26", "P2", "dash-density",
             "Тире заменяет большинство связок; сигнал — плотность, а не сам знак.",
@@ -763,6 +765,25 @@ def audit(text: str, language: str = "auto", platform: str = "neutral") -> dict:
             findings.append(finding_from_pattern(item, matches, text, detected))
 
     findings.extend(structural_findings(scan_text, detected, platform))
+
+    # Варианты одного правила (например, слитная и разорванная формы S17,
+    # эмодзи- и болд-декор S22) агрегируются: один код — один объект в отчёте.
+    merged_by_code: dict[str, dict] = {}
+    merged: list[dict] = []
+    for finding in findings:
+        existing = merged_by_code.get(finding["code"])
+        if existing is None:
+            merged_by_code[finding["code"]] = finding
+            merged.append(finding)
+            continue
+        existing["count"] += finding["count"]
+        if SEVERITY_ORDER[finding["severity"]] < SEVERITY_ORDER[existing["severity"]]:
+            existing["severity"] = finding["severity"]
+        for evidence in finding["evidence"]:
+            if evidence not in existing["evidence"] and len(existing["evidence"]) < 4:
+                existing["evidence"].append(evidence)
+    findings = merged
+
     findings.sort(key=lambda item: (SEVERITY_ORDER[item["severity"]], item["code"]))
     counts = {severity: sum(item["severity"] == severity for item in findings) for severity in ("P0", "P1", "P2")}
 

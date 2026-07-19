@@ -132,7 +132,7 @@ python "C:\path\to\skill-creator\scripts\quick_validate.py" .
 
 ## Версии
 
-Текущая версия — 0.2.0. История изменений — в [CHANGELOG.md](CHANGELOG.md).
+Текущая версия — 0.2.1. История изменений — в [CHANGELOG.md](CHANGELOG.md).
 
 ## Лицензия
 

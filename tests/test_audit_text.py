@@ -39,6 +39,43 @@ def load_reference_headings() -> dict[str, str]:
     return headings
 
 
+class FrontmatterTests(unittest.TestCase):
+    """SKILL.md must stay valid per the Agent Skills spec (loader warns on extra keys)."""
+
+    ALLOWED_KEYS = {"allowed-tools", "description", "license", "metadata", "name"}
+    FRONTMATTER_RE = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
+
+    def frontmatter(self) -> str:
+        content = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        match = self.FRONTMATTER_RE.match(content)
+        self.assertIsNotNone(match, "SKILL.md должен начинаться с YAML frontmatter")
+        return match.group(1)
+
+    def test_only_spec_keys_at_top_level(self) -> None:
+        top_keys = set(re.findall(r"^([A-Za-z][\w-]*):", self.frontmatter(), re.MULTILINE))
+        self.assertTrue(
+            top_keys <= self.ALLOWED_KEYS,
+            f"лишние ключи frontmatter: {sorted(top_keys - self.ALLOWED_KEYS)}",
+        )
+        self.assertIn("name", top_keys)
+        self.assertIn("description", top_keys)
+
+    def test_name_and_description_are_sane(self) -> None:
+        block = self.frontmatter()
+        name = re.search(r"^name:\s*(\S+)\s*$", block, re.MULTILINE)
+        self.assertIsNotNone(name)
+        self.assertEqual(name.group(1), "humanizer-ru-uk")
+        description = re.search(r"^description:\s*(.+)$", block, re.MULTILINE)
+        self.assertIsNotNone(description)
+        self.assertLessEqual(len(description.group(1)), 1024)
+
+    def test_version_lives_under_metadata(self) -> None:
+        block = self.frontmatter()
+        self.assertNotRegex(block, r"(?m)^version:", "version должен лежать в metadata, не на верхнем уровне")
+        self.assertRegex(block, r"(?m)^metadata:\s*$", "нет блока metadata")
+        self.assertRegex(block, r"(?m)^\s+version:\s*\"?\d+\.\d+\.\d+\"?\s*$")
+
+
 class SyncTests(unittest.TestCase):
     """Every code the script can emit must mean the same thing in references/."""
 
@@ -169,6 +206,39 @@ class PatternTests(unittest.TestCase):
         self.assertIn("S26", codes(audit_text.audit(dense, "ru")))
         dialogue = "— Привет!\n— Привет, как дела?\n— Нормально, запускаем завтра."
         self.assertNotIn("S26", codes(audit_text.audit(dialogue, "ru")))
+
+    def test_dialogue_dash_does_not_shadow_authorial_dashes(self) -> None:
+        mixed = (
+            "— Диалог начинается здесь.\n"
+            "Первый тезис — короткий.\n"
+            "Второй тезис — понятный.\n"
+            "Третий тезис — завершает мысль."
+        )
+        result = audit_text.audit(mixed, "ru")
+        self.assertIn("S26", codes(result))
+        by_code = {item["code"]: item for item in result["findings"]}
+        self.assertEqual(by_code["S26"]["count"], 3)
+
+    def test_s17_variants_merge_into_single_finding(self) -> None:
+        text = (
+            "Это не просто пост — это система. Это не просто список — это метод. "
+            "Это не реклама. Это разбор без прикрас."
+        )
+        result = audit_text.audit(text, "ru")
+        s17 = [item for item in result["findings"] if item["code"] == "S17"]
+        self.assertEqual(len(s17), 1)
+        self.assertGreaterEqual(s17[0]["count"], 3)
+
+    def test_findings_never_repeat_codes(self) -> None:
+        noisy = (
+            "Это не просто пост — это система. Это не просто список — это метод. "
+            "Это не реклама. Это разбор без прикрас.\n"
+            "⚡ Быстрый старт\n⚡ Простой интерфейс\n⚡ Честные цифры\n"
+            "Итог: **скорость**, **простота**, **честность** и **контроль** решают."
+        )
+        result = audit_text.audit(noisy, "ru")
+        all_codes = [item["code"] for item in result["findings"]]
+        self.assertEqual(len(all_codes), len(set(all_codes)))
 
     def test_forced_triads_need_repetition(self) -> None:
         double = (
