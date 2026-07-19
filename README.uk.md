@@ -116,7 +116,7 @@ Get-Content post.txt -Raw | python scripts/audit_text.py - --lang uk
 
 ## Версії
 
-Поточна версія — 0.3.1. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
+Поточна версія — 0.3.2. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
 
 ## Ліцензія
 

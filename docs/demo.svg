@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="512" viewBox="0 0 780 512" font-family="ui-monospace, 'Cascadia Code', Consolas, 'Liberation Mono', monospace" font-size="13">
+  <rect width="780" height="512" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <circle cx="24" cy="22" r="6" fill="#ff5f57"/>
+  <circle cx="44" cy="22" r="6" fill="#febc2e"/>
+  <circle cx="64" cy="22" r="6" fill="#28c840"/>
+  <text x="390" y="26" fill="#8b949e" text-anchor="middle" font-size="12">humanizer-ru-uk — офлайн-аудит поста</text>
+
+  <text x="24" y="60" fill="#7ee787">$ <tspan fill="#e6edf3">python scripts/audit_text.py post.txt --lang ru</tspan></text>
+
+  <text x="24" y="92" fill="#8b949e">Язык: русский · Слов: 42 · Предложений: 4</text>
+  <text x="24" y="112" fill="#e6edf3">P0: <tspan fill="#f85149">0</tspan>  |  P1: <tspan fill="#f0883e">3</tspan>  |  P2: <tspan fill="#d29922">1</tspan></text>
+
+  <text x="24" y="146" fill="#f0883e">[P1] S05 — Универсальный заход <tspan fill="#8b949e">(x1)</tspan></text>
+  <text x="40" y="166" fill="#8b949e">«В современном мире автоматизация играет ключевую роль…»</text>
+  <text x="40" y="186" fill="#7ee787">→ Начать с конкретного события, наблюдения или вывода.</text>
+
+  <text x="24" y="216" fill="#f0883e">[P1] S06 — Пустая важность <tspan fill="#8b949e">(x2)</tspan></text>
+  <text x="40" y="236" fill="#8b949e">«…Важно отметить, что наш новый сервис позволяет…»</text>
+  <text x="40" y="256" fill="#7ee787">→ Убрать рамку и показать, что именно изменилось.</text>
+
+  <text x="24" y="286" fill="#f0883e">[P1] S08 — Рекламная инфляция <tspan fill="#8b949e">(x1)</tspan></text>
+  <text x="40" y="306" fill="#8b949e">«…позволяет вывести обработку заявок на новый уровень»</text>
+  <text x="40" y="326" fill="#7ee787">→ Заменить фактическим действием или результатом из исходника.</text>
+
+  <text x="24" y="356" fill="#d29922">[P2] S13 — Автоматический призыв к действию <tspan fill="#8b949e">(x1)</tspan></text>
+  <text x="40" y="376" fill="#8b949e">«Сохраните этот пост, чтобы не потерять!»</text>
+  <text x="40" y="396" fill="#7ee787">→ Оставить только по задаче автора и сформулировать в его голосе.</text>
+
+  <text x="24" y="434" fill="#8b949e" font-style="italic">Редакторские сигналы, не вывод об авторстве.</text>
+
+  <line x1="24" y1="454" x2="756" y2="454" stroke="#30363d"/>
+  <text x="24" y="480" fill="#e6edf3">Режим rewrite вернёт готовый пост без этих паттернов —</text>
+  <text x="24" y="498" fill="#e6edf3">с сохранением фактов и голоса автора.</text>
+</svg>

@@ -6,6 +6,10 @@ Agent Skill для естественных постов на русском и 
 
 [Українська версія README](README.uk.md)
 
+<div align="center">
+  <img src="docs/demo.svg" alt="Офлайн-аудитор находит в посте универсальный заход, пустую важность, рекламную инфляцию и шаблонный CTA" width="780">
+</div>
+
 ## Зачем он нужен
 
 Большинство humanizer-скиллов переводят английский чеклист и обещают «обход детекторов». Здесь другая задача: читатель не должен спотыкаться о канцелярит, одинаковые абзацы, пустые крючки, фальшивую экспертность и другие следы шаблонного текста.
@@ -129,10 +133,11 @@ Get-Content post.txt -Raw | python scripts/audit_text.py - --lang ru
 
 ```powershell
 python -m unittest discover -s tests -v
-python "C:\path\to\skill-creator\scripts\quick_validate.py" .
+python scripts/build_ports.py --check
+python scripts/eval_corpus.py
 ```
 
-Тесты запускаются на Windows и Linux через GitHub Actions.
+Тесты запускаются на Windows и Linux через GitHub Actions. `eval_corpus.py` гоняет аудитор по эталонному корпусу: ИИ-сторона лежит в [eval/ai](eval/), свои реальные посты для замера ложных срабатываний кладутся в `eval/human/` (в git не попадают). Подробности — в [eval/README.md](eval/README.md).
 
 ## Происхождение
 
@@ -152,7 +157,7 @@ Four modes: `rewrite` (default), `audit` (flag only), `draft` (post from notes),
 
 ## Версии
 
-Текущая версия — 0.3.1. История изменений — в [CHANGELOG.md](CHANGELOG.md).
+Текущая версия — 0.3.2. История изменений — в [CHANGELOG.md](CHANGELOG.md).
 
 ## Лицензия
 

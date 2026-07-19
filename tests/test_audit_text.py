@@ -76,6 +76,21 @@ class FrontmatterTests(unittest.TestCase):
         self.assertRegex(block, r"(?m)^\s+version:\s*\"?\d+\.\d+\.\d+\"?\s*$")
 
 
+class EvalTests(unittest.TestCase):
+    def test_eval_harness_runs_and_catches_ai_corpus(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "eval_corpus.py"), "--format", "json"],
+            check=False, capture_output=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr.decode(errors="replace"))
+        report = json.loads(completed.stdout.decode("utf-8"))
+        ai = report["corpora"]["ai"]
+        self.assertGreaterEqual(ai["files"], 10)
+        self.assertGreaterEqual(ai["mean_total"], 2.0, "ИИ-корпус должен ловиться в среднем на 2+ флага")
+        for item in ai["per_file"]:
+            self.assertGreaterEqual(item["total"], 1, f"{item['file']} не пойман ни одним правилом")
+
+
 class PortTests(unittest.TestCase):
     """dist/ должен собираться из исходников и не отставать от них."""
 
