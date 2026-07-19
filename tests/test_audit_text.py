@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -18,8 +19,52 @@ sys.modules[SPEC.name] = audit_text
 SPEC.loader.exec_module(audit_text)
 
 
+HEADING_RE = re.compile(r"^###\s+([SRU]\d{2})\.\s+(.+?)\s*$", re.MULTILINE)
+
+
 def codes(result: dict) -> set[str]:
     return {item["code"] for item in result["findings"]}
+
+
+def normalize_title(value: str) -> str:
+    return re.sub(r"[^0-9a-zа-яёіїєґ]+", "", value.lower())
+
+
+def load_reference_headings() -> dict[str, str]:
+    headings: dict[str, str] = {}
+    for name in ("shared-patterns.md", "russian.md", "ukrainian.md"):
+        content = (ROOT / "references" / name).read_text(encoding="utf-8")
+        for code, title in HEADING_RE.findall(content):
+            headings[code] = title
+    return headings
+
+
+class SyncTests(unittest.TestCase):
+    """Every code the script can emit must mean the same thing in references/."""
+
+    def test_pattern_codes_and_titles_match_references(self) -> None:
+        docs = load_reference_headings()
+        for item in audit_text.PATTERNS:
+            with self.subTest(code=item.code):
+                self.assertIn(item.code, docs, f"{item.code} отсутствует в references/")
+                script_title = item.title_uk if item.code.startswith("U") else item.title_ru
+                self.assertEqual(
+                    normalize_title(script_title),
+                    normalize_title(docs[item.code]),
+                    f"{item.code}: скрипт «{script_title}» != каталог «{docs[item.code]}»",
+                )
+
+    def test_structural_codes_and_titles_match_references(self) -> None:
+        docs = load_reference_headings()
+        for code, (title_ru, title_uk) in audit_text.STRUCTURAL_RULES.items():
+            with self.subTest(code=code):
+                self.assertIn(code, docs, f"{code} отсутствует в references/")
+                script_title = title_uk if code.startswith("U") else title_ru
+                self.assertEqual(
+                    normalize_title(script_title),
+                    normalize_title(docs[code]),
+                    f"{code}: скрипт «{script_title}» != каталог «{docs[code]}»",
+                )
 
 
 class LanguageTests(unittest.TestCase):
@@ -41,8 +86,9 @@ class PatternTests(unittest.TestCase):
     def test_chatbot_wrapper_is_p0(self) -> None:
         result = audit_text.audit("Конечно! Давайте разберёмся. Вот готовый пост для публикации.", "ru")
         self.assertIn("S01", codes(result))
-        self.assertIn("S04", codes(result))
-        self.assertGreaterEqual(result["finding_counts"]["P0"], 2)
+        by_code = {item["code"]: item for item in result["findings"]}
+        self.assertGreaterEqual(by_code["S01"]["count"], 2)
+        self.assertGreaterEqual(result["finding_counts"]["P0"], 1)
 
     def test_ukrainian_calques_are_language_specific(self) -> None:
         text = (
@@ -50,17 +96,25 @@ class PatternTests(unittest.TestCase):
             "Проблема заключається в тому, що сервіс являється нестабільним."
         )
         result = audit_text.audit(text, "uk")
-        self.assertTrue({"U02", "U03", "U04", "U05"}.issubset(codes(result)))
+        self.assertTrue({"U02", "U04", "U05", "U06"}.issubset(codes(result)))
         self.assertNotIn("R04", codes(result))
 
     def test_contextual_ukrainian_phrases_are_flagged_not_auto_corrected(self) -> None:
         result = audit_text.audit(
             "На протязі біля вікна лежить книга, а гроші надійшли на рахунок.", "uk"
         )
-        self.assertTrue({"U07", "U10"}.issubset(codes(result)))
+        self.assertTrue({"U08", "U11"}.issubset(codes(result)))
         by_code = {item["code"]: item for item in result["findings"]}
-        self.assertEqual(by_code["U07"]["severity"], "P2")
-        self.assertIn("контекст", by_code["U07"]["fix"].lower())
+        self.assertEqual(by_code["U08"]["severity"], "P2")
+        self.assertIn("контекст", by_code["U08"]["fix"].lower())
+
+    def test_mixed_mode_skips_ambiguous_uk_rule(self) -> None:
+        result = audit_text.audit(
+            "Это чернетка українською, і задача дана команде ще вчора.", "mixed"
+        )
+        self.assertNotIn("U01", codes(result))
+        pure_uk = audit_text.audit("Даний інструмент нам не підходить.", "uk")
+        self.assertIn("U01", codes(pure_uk))
 
     def test_clean_russian_post_has_no_false_authorship_fields(self) -> None:
         text = (
@@ -96,8 +150,40 @@ class PatternTests(unittest.TestCase):
                 "Канал сегодня ровно получил готовую публикацию вовремя.",
             ]
         )
-        self.assertIn("T01", codes(audit_text.audit(uniform, "ru")))
-        self.assertIn("T02", codes(audit_text.audit("Коротко. Честно. По делу. А дальше — факты.", "ru")))
+        self.assertIn("S20", codes(audit_text.audit(uniform, "ru")))
+        self.assertIn("S21", codes(audit_text.audit("Коротко. Честно. По делу. А дальше — факты.", "ru")))
+
+    def test_split_contrast_is_flagged(self) -> None:
+        result = audit_text.audit("Это не реклама. Это разбор ошибок нашего запуска.", "ru")
+        self.assertIn("S17", codes(result))
+
+    def test_single_joined_contrast_is_not_flagged(self) -> None:
+        result = audit_text.audit("Это не просто пост — это рабочий инструмент.", "ru")
+        self.assertNotIn("S17", codes(result))
+
+    def test_dash_density_is_flagged_but_dialogue_is_not(self) -> None:
+        dense = (
+            "Наш релиз — это тест на выносливость. Команда — маленькая, но упрямая. "
+            "Сроки — жёсткие, бюджет — смешной. Работаем дальше без пауз."
+        )
+        self.assertIn("S26", codes(audit_text.audit(dense, "ru")))
+        dialogue = "— Привет!\n— Привет, как дела?\n— Нормально, запускаем завтра."
+        self.assertNotIn("S26", codes(audit_text.audit(dialogue, "ru")))
+
+    def test_forced_triads_need_repetition(self) -> None:
+        double = (
+            "Сервис получился быстрым, удобным и надёжным. "
+            "Команда работала честно, спокойно и слаженно."
+        )
+        self.assertIn("S18", codes(audit_text.audit(double, "ru")))
+        single = "Сервис получился быстрым, удобным и надёжным, и это заметно."
+        self.assertNotIn("S18", codes(audit_text.audit(single, "ru")))
+
+    def test_hashtag_threshold_depends_on_platform(self) -> None:
+        text = "Пост о запуске.\n#запуск #продукт #команда #аналитика #маркетинг #рост #стартап"
+        self.assertIn("S25", codes(audit_text.audit(text, "ru")))
+        relaxed = audit_text.audit(text, "ru", platform="instagram")
+        self.assertNotIn("S25", codes(relaxed))
 
     def test_all_regular_expressions_compile(self) -> None:
         for item in audit_text.PATTERNS:
@@ -110,9 +196,18 @@ class PatternTests(unittest.TestCase):
             "Неправильный пример: `приймати участь`.\n\n```text\nявляється\n```",
             "uk",
         )
-        self.assertNotIn("U03", codes(result))
         self.assertNotIn("U04", codes(result))
-        self.assertNotIn("T02", codes(result))
+        self.assertNotIn("U05", codes(result))
+        self.assertNotIn("S21", codes(result))
+
+    def test_blockquotes_are_not_audited(self) -> None:
+        result = audit_text.audit(
+            "> На даний момент команда приймає участь у тесті.\n\n"
+            "Власний текст без кальок і рамок.",
+            "uk",
+        )
+        self.assertNotIn("U02", codes(result))
+        self.assertNotIn("U04", codes(result))
 
 
 class InputOutputTests(unittest.TestCase):
@@ -121,6 +216,19 @@ class InputOutputTests(unittest.TestCase):
             path = Path(temp_dir) / "post.txt"
             path.write_bytes("Это тестовый пост.".encode("cp1251"))
             self.assertEqual(audit_text.read_text(str(path)), "Это тестовый пост.")
+
+    def test_reads_utf16_with_bom(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "post.txt"
+            path.write_text("Это тестовый пост.", encoding="utf-16")
+            self.assertEqual(audit_text.read_text(str(path)), "Это тестовый пост.")
+
+    def test_rejects_utf16_without_bom_instead_of_mojibake(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "post.txt"
+            path.write_bytes("Это тестовый пост.".encode("utf-16-le"))
+            with self.assertRaises(UnicodeError):
+                audit_text.read_text(str(path))
 
     def test_cli_outputs_utf8_json(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -134,6 +242,31 @@ class InputOutputTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr.decode(errors="replace"))
             payload = json.loads(completed.stdout.decode("utf-8"))
             self.assertEqual(payload["language"], "uk")
+
+    def test_cli_fail_on_severity_sets_exit_code(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dirty = Path(temp_dir) / "dirty.txt"
+            dirty.write_text("Конечно! Давайте разберёмся. Вот готовый пост.", encoding="utf-8")
+            clean = Path(temp_dir) / "clean.txt"
+            clean.write_text("Вчера мы выкатили релиз и починили авторизацию.", encoding="utf-8")
+
+            gated = subprocess.run(
+                [sys.executable, str(SCRIPT), str(dirty), "--lang", "ru", "--fail-on", "P0"],
+                check=False, capture_output=True,
+            )
+            self.assertEqual(gated.returncode, 1)
+
+            ungated = subprocess.run(
+                [sys.executable, str(SCRIPT), str(dirty), "--lang", "ru"],
+                check=False, capture_output=True,
+            )
+            self.assertEqual(ungated.returncode, 0)
+
+            clean_gated = subprocess.run(
+                [sys.executable, str(SCRIPT), str(clean), "--lang", "ru", "--fail-on", "P0"],
+                check=False, capture_output=True,
+            )
+            self.assertEqual(clean_gated.returncode, 0)
 
 
 if __name__ == "__main__":

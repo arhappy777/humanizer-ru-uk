@@ -86,10 +86,12 @@ git clone https://github.com/arhappy777/humanizer-ru-uk "$env:USERPROFILE\.codex
 ```powershell
 python scripts/audit_text.py post.txt --lang auto
 python scripts/audit_text.py post.txt --lang uk --format json
+python scripts/audit_text.py post.txt --platform instagram
+python scripts/audit_text.py post.txt --fail-on P0
 Get-Content post.txt -Raw | python scripts/audit_text.py - --lang uk
 ```
 
-Сканер показує конкретні редакторські сигнали. Він не переписує текст, не визначає авторство й не рахує «ймовірність AI». Підтримуються UTF-8 та Windows-1251; потрібен Python 3.10+.
+Сканер показує конкретні редакторські сигнали. Він не переписує текст, не визначає авторство й не рахує «ймовірність AI». `--platform` змінює платформні пороги (хвіст хештегів), `--fail-on` повертає ненульовий код виходу для пайплайнів. Коди сигналів збігаються з розділами каталогів у `references/`; синхронізацію перевіряє тест у CI. Підтримуються UTF-8, UTF-16 із BOM та Windows-1251; потрібен Python 3.10+.
 
 ## Як працює метод
 
@@ -107,6 +109,10 @@ Get-Content post.txt -Raw | python scripts/audit_text.py - --lang uk
 Методику написано спеціально для українських і російських соціальних дописів. На неї вплинули відкриті MIT-проєкти [blader/humanizer](https://github.com/blader/humanizer), [avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing), [Aboudjem/humanizer-skill](https://github.com/Aboudjem/humanizer-skill) і [humanizer-ru](https://github.com/ilyautov/humanizer-ru). Код аудитора та формулювання правил написано заново.
 
 Український профіль спирається на чинний [стандарт «Український правопис» 2026 року](https://mova.gov.ua/storage/app/sites/19/2026/rishennja-komisiji/01-03/sdm-ukrayinskii-pravopis-vidannia.pdf).
+
+## Версії
+
+Поточна версія — 0.2.0. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
 
 ## Ліцензія
 

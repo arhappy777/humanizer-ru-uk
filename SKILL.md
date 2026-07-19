@@ -1,6 +1,8 @@
 ---
 name: humanizer-ru-uk
 description: Редактировать и писать по заметкам естественные посты на русском и украинском для Telegram, Instagram и других соцсетей; убирать шаблонный ИИ/AI-стиль, канцелярит, кальки, пустые крючки, одинаковый ритм и артефакты чатботов, сохраняя факты и голос автора. Use when asked «убери ИИ-шный стиль», «очеловечь текст», «перепиши как человек», «зроби текст живим», «прибери ШІ-шний стиль», audit/detect AI writing patterns, подготовить или отредактировать пост. Не использовать как детектор авторства и не обещать обход AI-детекторов.
+version: 0.2.0
+license: MIT
 ---
 
 # Humanizer RU/UK
@@ -56,7 +58,11 @@ description: Редактировать и писать по заметкам е
 ```bash
 python scripts/audit_text.py path/to/post.txt --lang auto
 python scripts/audit_text.py path/to/post.txt --lang uk --format json
+python scripts/audit_text.py path/to/post.txt --platform instagram
+python scripts/audit_text.py path/to/post.txt --fail-on P0
 ```
+
+`--platform` меняет платформенные пороги (хвост хештегов S25); `--fail-on P0|P1|P2` возвращает код выхода 1, чтобы скрипт работал воротами в пайплайне. Коды флагов совпадают с заголовками разделов в `references/` — расхождение ловит тест в CI.
 
 Считать результат скрипта списком редакторских зацепок, а не вердиктом. Перепроверить каждое совпадение глазами.
 

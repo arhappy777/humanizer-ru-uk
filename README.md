@@ -95,10 +95,14 @@ git clone https://github.com/arhappy777/humanizer-ru-uk "$env:USERPROFILE\.codex
 ```powershell
 python scripts/audit_text.py post.txt --lang auto
 python scripts/audit_text.py post.txt --lang uk --format json
+python scripts/audit_text.py post.txt --platform instagram
+python scripts/audit_text.py post.txt --fail-on P0
 Get-Content post.txt -Raw | python scripts/audit_text.py - --lang ru
 ```
 
-Поддерживаются UTF-8 и Windows-1251. Для работы нужен только Python 3.10+.
+`--platform` меняет платформенные пороги (хвост хештегов), `--fail-on` возвращает ненулевой код выхода для пайплайнов. Коды флагов совпадают с разделами каталогов в `references/`; синхронизацию проверяет тест в CI.
+
+Поддерживаются UTF-8, UTF-16 с BOM и Windows-1251. Для работы нужен только Python 3.10+.
 
 ## Принцип работы
 
@@ -125,6 +129,10 @@ python "C:\path\to\skill-creator\scripts\quick_validate.py" .
 Методика написана специально для русских и украинских социальных постов. На неё повлияли открытые MIT-проекты [blader/humanizer](https://github.com/blader/humanizer), [avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing), [Aboudjem/humanizer-skill](https://github.com/Aboudjem/humanizer-skill) и [humanizer-ru](https://github.com/ilyautov/humanizer-ru). Код аудитора и формулировки правил написаны заново.
 
 Украинский профиль сверяется с действующим [стандартом «Український правопис» 2026 года](https://mova.gov.ua/storage/app/sites/19/2026/rishennja-komisiji/01-03/sdm-ukrayinskii-pravopis-vidannia.pdf).
+
+## Версии
+
+Текущая версия — 0.2.0. История изменений — в [CHANGELOG.md](CHANGELOG.md).
 
 ## Лицензия
 
