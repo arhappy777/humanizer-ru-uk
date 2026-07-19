@@ -459,6 +459,7 @@ STRUCTURAL_RULES: dict[str, tuple[str, str]] = {
     "S23": ("Список вместо мысли", "Список замість думки"),
     "S25": ("Хвост хештегов", "Хвіст хештегів"),
     "S26": ("Тире как универсальная пауза", "Тире як універсальна пауза"),
+    "S27": ("Вопрос-вовлечение в финале", "Питання-залучення у фіналі"),
 }
 
 TRIAD_RE = re.compile(
@@ -467,6 +468,11 @@ TRIAD_RE = re.compile(
 SPACED_DASH_RE = re.compile(r"(?<=\s)[—–](?=\s)|\A[—–](?=\s)")
 GLUED_DASH_RE = re.compile(r"(?<=[а-яёіїєґa-z])—(?=[а-яёіїєґa-z])", re.IGNORECASE)
 HASHTAG_RUN_RE = re.compile(r"(?:#[^\s#,]+[ \t,]*)+")
+ENGAGEMENT_QUESTION_RE = re.compile(
+    r"^(?:а|і|и)\s+(?:вы|ви|ты|у\s+вас|у\s+тебе|как\s+вы|что\s+вы|як\s+ви|що\s+ви)\b"
+    r"|^(?:согласны|згодні)\b",
+    re.IGNORECASE,
+)
 
 
 def configure_utf8() -> None:
@@ -725,6 +731,18 @@ def structural_findings(text: str, detected: str, platform: str = "neutral") -> 
             "Лишити тільки задані або справді потрібні хештеги.",
             [snippet(text, run_match.start(), run_match.end())], max_run,
         ))
+
+    if sentences:
+        last_sentence = sentences[-1]
+        if last_sentence.endswith("?") and ENGAGEMENT_QUESTION_RE.match(last_sentence):
+            findings.append(localized_finding(
+                detected, "S27", "P2", "engagement-question",
+                "Финальный вопрос-вовлечение — приклеенный механизм, а не продолжение мысли.",
+                "Фінальне питання-залучення — приклеєний механізм, а не продовження думки.",
+                "Убрать или заменить вопросом, который реально продолжает тему; дословно сохранять только по явной задаче автора.",
+                "Прибрати або замінити питанням, що справді продовжує тему; дослівно зберігати лише за явним завданням автора.",
+                [snippet(last_sentence, 0, min(len(last_sentence), 80), 0)], 1,
+            ))
 
     # Реплика диалога — это тире в начале строки; такие совпадения не считаются паузами.
     pause_dashes = [

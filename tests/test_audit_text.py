@@ -296,6 +296,18 @@ class PatternTests(unittest.TestCase):
         single = "Сервис получился быстрым, удобным и надёжным, и это заметно."
         self.assertNotIn("S18", codes(audit_text.audit(single, "ru")))
 
+    def test_final_engagement_question_is_flagged(self) -> None:
+        ending = (
+            "Сегодня выключил уведомления на три часа и наконец дописал отчёт. "
+            "А вы умеете вовремя нажать на паузу?"
+        )
+        self.assertIn("S27", codes(audit_text.audit(ending, "ru")))
+        mid_text = (
+            "А вы знали про новый лимит по API? Мы проверили: он реально действует. "
+            "Отчёт готов, завтра покажу цифры."
+        )
+        self.assertNotIn("S27", codes(audit_text.audit(mid_text, "ru")))
+
     def test_hashtag_threshold_depends_on_platform(self) -> None:
         text = "Пост о запуске.\n#запуск #продукт #команда #аналитика #маркетинг #рост #стартап"
         self.assertIn("S25", codes(audit_text.audit(text, "ru")))
