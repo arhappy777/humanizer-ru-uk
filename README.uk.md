@@ -47,7 +47,7 @@ git clone https://github.com/arhappy777/humanizer-ru-uk "$env:USERPROFILE\.codex
 
 ### ChatGPT, claude.ai та будь-який інший LLM
 
-Платформи без доступу до файлів скіла використовують зібрані версії з папки [dist](dist/): для ChatGPT вставте [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) у поле Instructions і прикладіть [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) як Knowledge; для claude.ai додайте повний файл у Project; в іншому чаті — надішліть файл і попросіть слідувати інструкції.
+Платформи без доступу до файлів скіла використовують зібрані версії з папки [dist](dist/): для ChatGPT прикладіть [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) як Knowledge (усі правила живуть там, без скорочень), а [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) вставте в поле Instructions — це завантажувач, що оголошує повний файл головним джерелом; для claude.ai додайте повний файл у Project; в іншому чаті — надішліть файл і попросіть слідувати інструкції.
 
 ## Використання
 
@@ -116,7 +116,7 @@ Get-Content post.txt -Raw | python scripts/audit_text.py - --lang uk
 
 ## Версії
 
-Поточна версія — 0.4.0. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
+Поточна версія — 0.4.1. Історія змін — у [CHANGELOG.md](CHANGELOG.md).
 
 ## Ліцензія
 

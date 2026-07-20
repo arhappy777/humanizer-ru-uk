@@ -53,7 +53,7 @@ git clone https://github.com/arhappy777/humanizer-ru-uk "$env:USERPROFILE\.codex
 
 Платформы без доступа к файлам скилла используют собранные версии из папки [dist](dist/):
 
-- **ChatGPT (Custom GPT):** содержимое [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) вставить в поле Instructions, а [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) приложить как Knowledge.
+- **ChatGPT (Custom GPT):** [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) приложить как Knowledge — в нём живут все правила, целиком и без сокращений. Содержимое [dist/chatgpt-instructions.md](dist/chatgpt-instructions.md) вставить в поле Instructions: это загрузчик, который объявляет полный файл главным источником.
 - **claude.ai:** добавить [dist/humanizer-ru-uk-full.md](dist/humanizer-ru-uk-full.md) в Project (или загрузить как скилл).
 - **Любой другой чат:** отправить файл или вставить его в начало диалога и попросить следовать инструкции.
 
@@ -157,7 +157,7 @@ Four modes: `rewrite` (default), `audit` (flag only), `draft` (post from notes),
 
 ## Версии
 
-Текущая версия — 0.4.0. История изменений — в [CHANGELOG.md](CHANGELOG.md).
+Текущая версия — 0.4.1. История изменений — в [CHANGELOG.md](CHANGELOG.md).
 
 ## Лицензия
 

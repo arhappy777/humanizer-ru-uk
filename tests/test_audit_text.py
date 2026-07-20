@@ -105,9 +105,13 @@ class PortTests(unittest.TestCase):
             + completed.stderr.decode("utf-8", errors="replace"),
         )
 
-    def test_chatgpt_instructions_fit_custom_gpt_limit(self) -> None:
+    def test_chatgpt_instructions_are_a_loader_for_the_full_file(self) -> None:
         content = (ROOT / "ports" / "chatgpt-instructions.md").read_text(encoding="utf-8")
-        self.assertLessEqual(len(content), 8000, "поле Instructions Custom GPT ограничено 8000 знаками")
+        self.assertIn(
+            "humanizer-ru-uk-full.md", content,
+            "инструкция обязана объявлять полный файл главным источником правил",
+        )
+        self.assertLessEqual(len(content), 8000, "иначе не вставится в поле Instructions Custom GPT")
 
     def test_full_port_contains_all_sections_and_no_repo_internals(self) -> None:
         content = (ROOT / "dist" / "humanizer-ru-uk-full.md").read_text(encoding="utf-8")

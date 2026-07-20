@@ -1,6 +1,6 @@
 # Humanizer RU/UK — полная инструкция одним файлом
 
-> Версия 0.4.0. Файл собран автоматически из `SKILL.md` и `references/` (`python scripts/build_ports.py`), руками не редактировать.
+> Версия 0.4.1. Файл собран автоматически из `SKILL.md` и `references/` (`python scripts/build_ports.py`), руками не редактировать.
 > Использование: ChatGPT — приложить как Knowledge к Custom GPT; claude.ai — добавить в Project; любой другой LLM — дать файл или вставить в начало чата и попросить следовать инструкции.
 
 
